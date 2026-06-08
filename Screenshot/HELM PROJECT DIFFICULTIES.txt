@@ -1,0 +1,533 @@
+HELM PROJECT DIFFICULTIES
+
+Yes. Based on our chat history, here is the complete Helm project journey you performed from start to finish. This is also useful for interviews, GitHub documentation, and LinkedIn discussions.
+
+# Helm Nginx Deployment Project - Complete Workflow
+
+## Phase 1: Environment Preparation
+
+### Install Required Tools
+
+Updated Ubuntu system:
+
+```bash
+sudo apt update
+sudo apt upgrade -y
+```
+
+Installed:
+
+* Docker
+* kubectl
+* KIND (Kubernetes in Docker)
+* Helm
+
+Verified:
+
+```bash
+docker --version
+kubectl version --client
+kind version
+helm version
+```
+
+---
+
+## Phase 2: Kubernetes Cluster Setup
+
+Created a Kubernetes cluster using KIND:
+
+```bash
+kind create cluster --name my-cluster
+```
+
+Verified:
+
+```bash
+kubectl get nodes
+```
+
+Output:
+
+```text
+NAME                  STATUS
+my-cluster-control-plane Ready
+```
+
+---
+
+## Phase 3: Learn Helm Basics
+
+Added Helm repository:
+
+```bash
+helm repo add jenkins https://charts.jenkins.io
+```
+
+Updated repositories:
+
+```bash
+helm repo update
+```
+
+Searched available charts:
+
+```bash
+helm search repo jenkins
+```
+
+---
+
+## Phase 4: Jenkins Deployment Using Helm
+
+Installed Jenkins:
+
+```bash
+helm install jenkins jenkins/jenkins \
+-n jenkins-ns \
+--create-namespace
+```
+
+Verified:
+
+```bash
+kubectl get pods -n jenkins-ns
+kubectl get svc -n jenkins-ns
+kubectl get pvc -n jenkins-ns
+```
+
+Learned:
+
+* Helm install
+* Helm repositories
+* Kubernetes namespaces
+* Persistent Volumes
+* Persistent Volume Claims
+
+---
+
+## Phase 5: Jenkins Access Troubleshooting
+
+Used:
+
+```bash
+kubectl port-forward svc/jenkins 8080:8080 -n jenkins-ns
+```
+
+Faced:
+
+* Port forwarding issues
+* Service access issues
+* Security group validation
+
+Verified Jenkins:
+
+```bash
+curl -I http://localhost:8080
+```
+
+Received:
+
+```text
+HTTP/1.1 403 Forbidden
+X-Jenkins: 2.555.2
+```
+
+Which confirmed Jenkins was running.
+
+---
+
+# Main Project
+
+# Phase 6: Create Custom Helm Chart
+
+Created chart structure:
+
+```text
+nginx-app/
+│
+├── Chart.yaml
+├── values.yaml
+└── templates/
+    ├── deployment.yaml
+    └── service.yaml
+```
+
+Learned:
+
+### Chart.yaml
+
+Stores metadata:
+
+```yaml
+apiVersion: v2
+name: nginx-app
+version: 0.1.0
+```
+
+### values.yaml
+
+Stores configurable values:
+
+```yaml
+replicaCount: 2
+
+image:
+  repository: nginx
+  tag: latest
+```
+
+### deployment.yaml
+
+Created Deployment template using:
+
+```yaml
+{{ .Release.Name }}
+{{ .Release.Namespace }}
+{{ .Values.replicaCount }}
+```
+
+### service.yaml
+
+Created ClusterIP Service.
+
+---
+
+## Phase 7: Helm Templating
+
+Learned:
+
+### .Release
+
+Provides:
+
+```yaml
+{{ .Release.Name }}
+{{ .Release.Namespace }}
+```
+
+### .Values
+
+Provides:
+
+```yaml
+{{ .Values.replicaCount }}
+{{ .Values.image.repository }}
+```
+
+Rendered templates:
+
+```bash
+helm template nginx-release ./nginx-app
+```
+
+---
+
+## Phase 8: Troubleshooting Helm Errors
+
+Solved:
+
+### Error 1
+
+```text
+expected at most two arguments
+```
+
+Reason:
+
+Incorrect Helm install syntax.
+
+---
+
+### Error 2
+
+```text
+repo Jenkins not found
+```
+
+Reason:
+
+Repository name mismatch.
+
+---
+
+### Error 3
+
+```text
+template: no template nginx-app.fullname
+```
+
+Reason:
+
+Leftover Helm-generated files.
+
+Solution:
+
+Removed unnecessary templates.
+
+---
+
+### Error 4
+
+```text
+deployment.ymal
+```
+
+Fixed typo:
+
+```text
+deployment.yaml
+```
+
+---
+
+### Error 5
+
+YAML indentation issues in service.yaml.
+
+Corrected:
+
+```yaml
+ports:
+  - name: http
+    port: 81
+```
+
+---
+
+## Phase 9: Validate Helm Chart
+
+Used:
+
+```bash
+helm lint ./nginx-app
+```
+
+Result:
+
+```text
+1 chart(s) linted, 0 chart(s) failed
+```
+
+---
+
+## Phase 10: Install Helm Chart
+
+Installed:
+
+```bash
+helm install nginx-release ./nginx-app \
+-n nginx-app-ns \
+--create-namespace
+```
+
+Verified:
+
+```bash
+kubectl get all -n nginx-app-ns
+```
+
+Output showed:
+
+* Pods
+* Deployment
+* ReplicaSet
+* Service
+
+Running successfully.
+
+---
+
+## Phase 11: Access Application
+
+Port Forward:
+
+```bash
+kubectl port-forward \
+--address 0.0.0.0 \
+svc/nginx-svc \
+9090:81 \
+-n nginx-app-ns
+```
+
+Initially saw:
+
+```text
+Welcome to nginx!
+```
+
+---
+
+## Phase 12: Create Custom Web Application
+
+Created:
+
+```bash
+mkdir helm-website
+cd helm-website
+```
+
+Created:
+
+```text
+index.html
+Dockerfile
+```
+
+Dockerfile:
+
+```dockerfile
+FROM nginx:latest
+
+COPY index.html \
+/usr/share/nginx/html/index.html
+```
+
+---
+
+## Phase 13: Docker Image Build
+
+Built:
+
+```bash
+docker build -t yourdockerhubusername/helm-nginx:v1 .
+```
+
+Later:
+
+```bash
+docker tag \
+yourdockerhubusername/helm-nginx:v1 \
+aman4255/helm-nginx:v1
+```
+
+---
+
+## Phase 14: Docker Hub Push
+
+Logged in:
+
+```bash
+docker login
+```
+
+Pushed:
+
+```bash
+docker push aman4255/helm-nginx:v1
+```
+
+Successfully uploaded image.
+
+---
+
+## Phase 15: Update Helm Chart
+
+Modified:
+
+```yaml
+image:
+  repository: aman4255/helm-nginx
+  tag: v1
+```
+
+Upgraded:
+
+```bash
+helm upgrade nginx-release ./nginx-app -n nginx-app-ns
+```
+
+Verified:
+
+```bash
+kubectl describe deployment nginx-release \
+-n nginx-app-ns | grep Image
+```
+
+Output:
+
+```text
+Image: aman4255/helm-nginx:v1
+```
+
+---
+
+## Phase 16: Deploy Updated Website
+
+Created improved HTML page.
+
+Built:
+
+```bash
+docker build -t aman4255/helm-nginx:v2 .
+```
+
+Pushed:
+
+```bash
+docker push aman4255/helm-nginx:v2
+```
+
+Updated:
+
+```yaml
+tag: v2
+```
+
+Upgraded:
+
+```bash
+helm upgrade nginx-release ./nginx-app -n nginx-app-ns
+```
+
+Restarted:
+
+```bash
+kubectl rollout restart deployment nginx-release \
+-n nginx-app-ns
+```
+
+Pods recreated successfully.
+
+---
+
+## Final Skills Demonstrated
+
+### Docker
+
+* Dockerfile creation
+* Image build
+* Image tagging
+* Docker Hub push
+
+### Kubernetes
+
+* Pods
+* Deployments
+* Services
+* Namespaces
+* Port Forwarding
+* Rollout Restart
+
+### Helm
+
+* Helm Repository
+* Helm Install
+* Helm Upgrade
+* Helm Template
+* Helm Lint
+* Helm Charts
+* values.yaml
+* Chart.yaml
+* Deployment Templates
+* Service Templates
+
+### AWS
+
+* EC2 Ubuntu Server
+* Security Groups
+* Remote Access
+
+---
+
+
